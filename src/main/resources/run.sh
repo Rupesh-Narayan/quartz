@@ -1,0 +1,3 @@
+#!/bin/bash
+
+java -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=9010 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.local.only=false -Ddd.jmxfetch.enabled=${DD_JMXFETCH_ENABLED} -Ddd.service.name=${APP_NAME} -javaagent:/app/dd-java-agent.jar -Dsun.net.inetaddr.ttl=30 -XX:+UseG1GC ${MEMORY_CONFIG} -XX:+DisableExplicitGC -XX:+UseTLAB -XX:-UseBiasedLocking -XX:MetaspaceSize=256m -XX:MaxMetaspaceSize=256m -XX:+AggressiveOpts -XX:+UseCompressedOops -jar /app/quartz.jar --spring.config.location=/app/quartz-app.yml

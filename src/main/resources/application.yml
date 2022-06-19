@@ -1,0 +1,110 @@
+server:
+  port: ${PORT}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+      base-path: "/"
+      path-mapping:
+        prometheus: metrics
+        health: quartz/v1/health
+
+####### SPRING JPA ############
+spring:
+  application:
+    name: quartz
+  jpa:
+    hibernate:
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+
+mysqlConfig:
+  acquireIncrement: ${DB_ACQUIRE_INCREMENT}
+  driverClass: com.mysql.jdbc.Driver
+  idleConnectionTestPeriodInSeconds: ${DB_IDLE_CONNECTION_TEST_PERIOD_IN_SECONDS}
+  idleMaxAgeInSeconds: ${DB_IDLE_MAX_AGE_IN_SECONDS}
+  jdbcUrl: "jdbc:mysql://${QUARTZ_DB_HOST_WRITE}:${DB_PORT_WRITE}/${DB_NAME}?useUnicode=yes&characterEncoding=UTF-8&autoReconnect=true&&useSSL=false&zeroDateTimeBehavior=convertToNull"
+  maxConnectionsPerPartition: ${DB_MAX_CONNECTIONS_PER_PARTITION}
+  minConnectionsPerPartition: ${DB_MIN_CONNECTIONS_PER_PARTITION}
+  partitionCount: ${DB_PARTITION_COUNT}
+  password: ${DB_PASS_WRITE}
+  statementsCacheSize: ${DB_STATEMENTS_CACHE_SIZE}
+  user: ${DB_USER_WRITE}
+####### SPRING JPA ############
+
+servicesConfig:
+  services:
+    athena:
+      topic: "session_scheduler"
+      target:
+        - notify-session-start
+        - session-validate
+        - session-daily
+        - session-terminate
+        - session-replay-eligibility
+        - auto-close-lsg
+        - breakout-trigger
+        - agora-replay-check
+        - insert-timeseries-data
+        - sanitize-user-logger-data
+        - disconnection-detection-data
+        - session-exit-breakout
+        - breakout-cleanup
+        - session-vote-choice
+        - answer-screen-event
+        - team-qna-popup
+    social:
+      topic: "schedule_group_metric"
+      target:
+        - schedule-group-metric
+    groups:
+      topic: "groups_scheduler"
+      target:
+        - notify-group-status
+        - archive-group
+    socket:
+      topic: "socket_scheduler"
+      target:
+        - push-data-to-mongo
+    sparta:
+      topic: "sparta_scheduler"
+      target:
+        - competition_ready
+        - competition_next_question
+        - competition_end
+        - homework_start
+        - homework_end
+    packages:
+      topic: "packages_scheduler"
+      target:
+        - expire-cash-payment
+    titan:
+      topic: "titan_scheduler"
+      target:
+        - btg_next_question
+        - btg_result
+        - btg_restart
+        - btg_terminate
+        - btg_question_result
+    studygroup:
+      topic: "studygroup_scheduler"
+      target:
+        - sp_max_duration
+        - sp_max_duration_after_host
+        - sanitise_join_leave
+
+
+externalServicesConfig:
+  services:
+    noongate:
+      host: ${NOON_GATE_HOST}
+      port: "80"
+      apis:
+        noongateInjest:
+          method: GET
+          endpoint: "/noongate/v1/injest/"
+          connectionTimeout: 1000
+          socketTimeout: 1000
+          connectionRequestTimeout: 1000
